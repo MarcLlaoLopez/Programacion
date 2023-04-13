@@ -77,5 +77,3 @@ for pregunta in preguntes:
                     
     else:
         print("Has hecho 10 preguntas, se ha acabado el juego")
-           
-                

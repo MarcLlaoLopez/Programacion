@@ -1,38 +1,83 @@
-"""Amb el que sabeu fins ara,crearem una eina d'escaneig per a Dummies!!
+# Codi fet per Yassin Bekkaoui i per Marc Llao
 
-1. Escriviu un Script en python que en executar-se obtingui les ips de les interfícies i crei un diccionari amb el nom de la interfície com a clau i la ip com a valor {‘eth0’:’192.168.203.100/24’}
-2. L’script mostra els resultats per pantalla i l’usuari pot escollir una d’aquestes adreces per a fer un ping sweap a la XARXA amb nmap.
-3. S’emmagatzema els resultats de les ips disponibles en una llista.
-4. L’script mostra els resultats per pantalla i l’usuari pot escollir un equip per a realitzar un escaneig de ports i les versions dels serveis que s’estan executant en ells. Els resultats s’emmagatzemen en un diccionari amb el format {port:versio_servei}
-5. Els resultats es mostren per pantalla i l’usuari pot escollir un port per a realitzar un escaneig de vulnerabilitats."""
+import netifaces
+import subprocess
 
-from subprocess import run
-import time
+# Obtener información sobre todas las interfaces de red disponibles
+interfaces = netifaces.interfaces()
 
-"""
-for i in range(10):
-    print("Hola Que ase", i)
-    time.sleep(2)
-    run("clear")
-"""
+# Crear un diccionario para almacenar las direcciones IP de las interfaces
+ips = {}
 
-result = run (["ip", "a"], capture_output = True, text=True)
+# Recorrer todas las interfaces y obtener su dirección IP
+for interface in interfaces:
+    # Obtener información de la interfaz
+    info = netifaces.ifaddresses(interface)
+
+    # Verificar si la interfaz tiene una dirección IP asignada
+    if netifaces.AF_INET in info:
+        # Obtener la dirección IP y almacenarla en el diccionario
+        ips[interface] = info[netifaces.AF_INET][0]['addr']
+
+# Imprimir el diccionario con las direcciones IP de las interfaces
+
+contador= 1
+lista= []
+
+for interfaz in ips:
+    
+    print(contador, '.' ,interfaz)
+    contador+=1
+    lista.append(ips[interfaz])
 
 
-linies=result.stdout.split("\n")
-"""
-print("Resultats:\n", result.stdout)
-print("Codi Error:\n", result.returncode)
-print("Tipus error:\n", result.stderr)
-"""
 
-"""result=result.stdout.split("\n")"""
-lxarxes = []
-for i in range(len(linies)):
-    result[i]=linies[i].strip()
-    if (result[i][:5]=="inet"):
-        lxarxes.append(linies(i))
+seleccion = int(input("Quina interficie vols fer-li un nmap sweap:\n"))
 
-print("Resultat \n", lxarxes)
-print("Codi Retorn \n", result.returncode)
-print("Tipus Error \n", result.stderr)
+redes = (subprocess.run(["nmap", lista[seleccion-1] + "/24", "-n", "-sP"], capture_output=True, text=True))
+
+redes = redes.stdout.split("\n")
+
+
+redes2 = []
+
+for linia in redes:
+    if linia[:1] == "N":
+        redes2.append(linia.split(" ")[-1])
+
+print("Elige la ip que quieres escanear: ")      
+num=1
+
+del redes2[-1]
+
+
+for red in redes2:
+    
+    print(str(num)+": "+str(red))
+    num+=1
+
+escaneo = int(input("Que IP quieres escanear? \n"))
+
+vport = subprocess.run(["nmap", "-sV", str(redes2[escaneo-1])], capture_output=True, text=True)
+
+vport = vport.stdout.split("\n")
+
+vport2 = []
+vport2_version = []
+dicc_vport2 = {}
+
+for i in range(len(vport)):
+        if "open" in (vport[i]):
+            vport[i].split()
+            vport2.append(vport[i][:7])   
+            vport2_version.append(vport[i][21:]) 
+        else:
+            continue
+
+elementos = 0
+while elementos <= len(vport2):
+    dicc_vport2[vport2[elementos]] = vport2_version[elementos]
+    elementos += 1
+print(dicc_vport2)
+
+puertos = {}
